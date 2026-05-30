@@ -1,5 +1,6 @@
 package com.wallet.auth.service;
 
+import com.wallet.auth.domain.Role;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class TokenService {
@@ -18,15 +20,19 @@ public class TokenService {
         this.jwtEncoder = jwtEncoder;
     }
 
-    public String generateToken(String username, List<String> roles) {
+    public String generateToken(String username, Set<Role> roles) {
         Instant now = Instant.now();
+
+        List<String> roleNames = roles.stream()
+                .map(Role::name)
+                .toList();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("auth-service")
                 .issuedAt(now)
                 .expiresAt(now.plus(15, ChronoUnit.MINUTES))
                 .subject(username)
-                .claim("roles", roles)
+                .claim("roles", roleNames)
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();

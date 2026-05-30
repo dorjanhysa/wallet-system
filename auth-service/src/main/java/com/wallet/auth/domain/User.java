@@ -3,6 +3,9 @@ package com.wallet.auth.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -15,16 +18,22 @@ public class User  extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String roles;
+    @ElementCollection
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Set<Role> roles = new HashSet<>();
 
     @Column(nullable = false)
     private boolean enabled;
 
-    public User(String username, String hashedPassword, String roles) {
+    public User(String username, String hashedPassword, Set<Role> roles) {
         this.username = username;
         this.password = hashedPassword;
-        this.roles = roles;
+        this.roles = new HashSet<>(roles);
         this.enabled = true;
     }
 }
