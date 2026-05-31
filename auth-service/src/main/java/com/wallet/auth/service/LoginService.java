@@ -11,8 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -21,7 +19,7 @@ public class LoginService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
-    private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenStore refreshTokenStore;
 
     @Transactional(readOnly = true)
     public TokenResponse login(LoginRequest request) {
@@ -33,7 +31,7 @@ public class LoginService {
         }
 
         String accessToken = tokenService.generateToken(user.getUsername(), user.getRoles());
-        String refreshToken = refreshTokenService.create(user.getUsername());
+        String refreshToken = refreshTokenStore.create(user.getUsername());
 
         return new TokenResponse(accessToken, refreshToken, "Bearer", 900);
     }

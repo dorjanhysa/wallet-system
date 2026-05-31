@@ -12,7 +12,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RefreshTokenService {
+public class RefreshTokenStore {
 
     private static final String KEY_PREFIX = "refresh:";
     private static final Duration TTL = Duration.ofDays(7);

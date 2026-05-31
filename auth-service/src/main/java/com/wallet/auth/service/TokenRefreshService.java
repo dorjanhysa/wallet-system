@@ -12,18 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TokenRefreshService {
 
-    private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenStore refreshTokenStore;
     private final TokenService tokenService;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public TokenResponse refresh(String oldRefreshToken) {
-        String username = refreshTokenService.validateAndGetUsername(oldRefreshToken);
+        String username = refreshTokenStore.validateAndGetUsername(oldRefreshToken);
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(InvalidRefreshTokenException::new);
 
-        String newRefreshToken = refreshTokenService.rotate(oldRefreshToken);
+        String newRefreshToken = refreshTokenStore.rotate(oldRefreshToken);
         String accessToken = tokenService.generateToken(username, user.getRoles());
 
         return new TokenResponse(accessToken, newRefreshToken, "Bearer", 900);
