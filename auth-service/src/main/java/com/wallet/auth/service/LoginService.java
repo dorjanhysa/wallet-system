@@ -21,6 +21,7 @@ public class LoginService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional(readOnly = true)
     public TokenResponse login(LoginRequest request) {
@@ -32,7 +33,8 @@ public class LoginService {
         }
 
         String accessToken = tokenService.generateToken(user.getUsername(), user.getRoles());
+        String refreshToken = refreshTokenService.create(user.getUsername());
 
-        return new TokenResponse(accessToken, "Bearer", 900);
+        return new TokenResponse(accessToken, refreshToken, "Bearer", 900);
     }
 }
