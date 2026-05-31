@@ -1,13 +1,7 @@
 package com.wallet.auth.controller;
 
-import com.wallet.auth.dto.LoginRequest;
-import com.wallet.auth.dto.RefreshRequest;
-import com.wallet.auth.dto.RegisterRequest;
-import com.wallet.auth.dto.TokenResponse;
-import com.wallet.auth.service.LoginService;
-import com.wallet.auth.service.RegistrationService;
-import com.wallet.auth.service.TokenRefreshService;
-import com.wallet.auth.service.TokenService;
+import com.wallet.auth.dto.*;
+import com.wallet.auth.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +16,7 @@ public class AuthController {
     private final LoginService loginService;
     private final RegistrationService registrationService;
     private final TokenRefreshService tokenRefreshService;
+    private final RefreshTokenStore refreshTokenStore;
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -37,5 +32,11 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@Valid @RequestBody RefreshRequest request) {
         return ResponseEntity.ok(tokenRefreshService.refresh(request.refreshToken()));
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@Valid @RequestBody LogoutRequest request) {
+        refreshTokenStore.revoke(request.refreshToken());
     }
 }

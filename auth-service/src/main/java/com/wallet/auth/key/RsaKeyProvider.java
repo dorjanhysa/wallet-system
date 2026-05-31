@@ -47,4 +47,8 @@ public class RsaKeyProvider {
     public JWKSet getJwkSet() {
         return new JWKSet(rsaKey);
     }
+
+    public JWKSet getPublicJwkSet() {
+        return getJwkSet().toPublicJWKSet();
+    }
 }
