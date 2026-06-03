@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,5 +46,31 @@ public class AccountService {
         log.info("Account created with id: {} for user: {}", savedAccount.getId(), ownerUsername);
 
         return accountMapper.toResponse(savedAccount);
+    }
+
+    @Transactional
+    public AccountResponse deposit(String ownerUsername, BigDecimal amount) {
+        log.info("Deposit of {} requested for user: {}", amount, ownerUsername);
+
+        Account account = accountRepository.findByOwnerUsername(ownerUsername)
+                .orElseThrow(() -> new AccountNotFoundException(ownerUsername));
+
+        account.credit(amount);
+
+        log.info("Deposit completed for user: {}", ownerUsername);
+        return accountMapper.toResponse(account);
+    }
+
+    @Transactional
+    public AccountResponse withdraw(String ownerUsername, BigDecimal amount) {
+        log.info("Withdraw of {} requested for user: {}", amount, ownerUsername);
+
+        Account account = accountRepository.findByOwnerUsername(ownerUsername)
+                .orElseThrow(() -> new AccountNotFoundException(ownerUsername));
+
+        account.debit(amount);
+
+        log.info("Withdraw completed for user: {}", ownerUsername);
+        return accountMapper.toResponse(account);
     }
 }

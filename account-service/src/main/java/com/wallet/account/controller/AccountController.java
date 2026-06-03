@@ -1,6 +1,7 @@
 package com.wallet.account.controller;
 
 import com.wallet.account.dto.AccountResponse;
+import com.wallet.account.dto.AmountRequest;
 import com.wallet.account.dto.CreateAccountRequest;
 import com.wallet.account.service.AccountService;
 import jakarta.validation.Valid;
@@ -35,5 +36,21 @@ public class AccountController {
 
         URI location = URI.create("/api/accounts/" + accountCreated.id());
         return ResponseEntity.created(location).body(accountCreated);
+    }
+
+    @PostMapping("/me/deposit")
+    public AccountResponse deposit(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody AmountRequest request)
+    {
+        return accountService.deposit(jwt.getSubject(), request.amount());
+    }
+
+    @PostMapping("/me/withdraw")
+    public AccountResponse withdraw(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody AmountRequest request)
+    {
+        return accountService.withdraw(jwt.getSubject(), request.amount());
     }
 }
