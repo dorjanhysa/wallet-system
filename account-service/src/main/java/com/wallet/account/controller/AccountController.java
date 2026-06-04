@@ -3,9 +3,12 @@ package com.wallet.account.controller;
 import com.wallet.account.dto.AccountResponse;
 import com.wallet.account.dto.AmountRequest;
 import com.wallet.account.dto.CreateAccountRequest;
+import com.wallet.account.dto.TransactionResponse;
 import com.wallet.account.service.AccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -52,5 +55,12 @@ public class AccountController {
             @Valid @RequestBody AmountRequest request)
     {
         return accountService.withdraw(jwt.getSubject(), request.amount());
+    }
+
+    @GetMapping("/me/transactions")
+    public Page<TransactionResponse> getMyTransactions(
+            @AuthenticationPrincipal Jwt jwt,
+            Pageable pageable) {
+        return accountService.getMyTransactions(jwt.getSubject(), pageable);
     }
 }

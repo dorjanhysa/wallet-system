@@ -1,14 +1,20 @@
 package com.wallet.account.service;
 
 import com.wallet.account.domain.Account;
+import com.wallet.account.domain.Transaction;
+import com.wallet.account.domain.TransactionType;
 import com.wallet.account.dto.AccountResponse;
 import com.wallet.account.dto.CreateAccountRequest;
+import com.wallet.account.dto.TransactionResponse;
 import com.wallet.account.exception.AccountAlreadyExistsException;
 import com.wallet.account.exception.AccountNotFoundException;
 import com.wallet.account.mapper.AccountMapper;
 import com.wallet.account.repository.AccountRepository;
+import com.wallet.account.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +27,7 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final TransactionRepository transactionRepository;
 
     @Transactional(readOnly = true)
     public AccountResponse getMyAccount(String ownerUsername) {
@@ -29,7 +36,7 @@ public class AccountService {
         Account account = accountRepository.findByOwnerUsername(ownerUsername)
                 .orElseThrow(() -> new AccountNotFoundException(ownerUsername));
 
-        return accountMapper.toResponse(account);
+        return accountMapper.toAccountResponse(account);
     }
 
     @Transactional
@@ -45,7 +52,7 @@ public class AccountService {
 
         log.info("Account created with id: {} for user: {}", savedAccount.getId(), ownerUsername);
 
-        return accountMapper.toResponse(savedAccount);
+        return accountMapper.toAccountResponse(savedAccount);
     }
 
     @Transactional
@@ -57,8 +64,16 @@ public class AccountService {
 
         account.credit(amount);
 
+        Transaction tx = new Transaction(
+                account.getId(),
+                TransactionType.DEPOSIT,
+                amount,
+                account.getBalance()
+        );
+        transactionRepository.save(tx);
+
         log.info("Deposit completed for user: {}", ownerUsername);
-        return accountMapper.toResponse(account);
+        return accountMapper.toAccountResponse(account);
     }
 
     @Transactional
@@ -70,7 +85,25 @@ public class AccountService {
 
         account.debit(amount);
 
+        Transaction tx = new Transaction(
+                account.getId(),
+                TransactionType.WITHDRAWAL,
+                amount,
+                account.getBalance()
+        );
+        transactionRepository.save(tx);
+
         log.info("Withdraw completed for user: {}", ownerUsername);
-        return accountMapper.toResponse(account);
+        return accountMapper.toAccountResponse(account);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TransactionResponse> getMyTransactions(String ownerUsername, Pageable pageable) {
+        Account account = accountRepository.findByOwnerUsername(ownerUsername)
+                .orElseThrow(() -> new AccountNotFoundException(ownerUsername));
+
+        return transactionRepository
+                .findByAccountIdOrderByCreatedAtDesc(account.getId(), pageable)
+                .map(accountMapper::toTransactionResponse);
     }
 }

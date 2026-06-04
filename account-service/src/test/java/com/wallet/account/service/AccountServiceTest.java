@@ -36,7 +36,7 @@ class AccountServiceTest {
         account.credit(new BigDecimal("50.00"));
 
         when(accountRepository.findByOwnerUsername("dorjan")).thenReturn(Optional.of(account));
-        when(accountMapper.toResponse(account))
+        when(accountMapper.toAccountResponse(account))
                 .thenReturn(new AccountResponse(UUID.randomUUID(), "dorjan", new BigDecimal("150.00"), "EUR"));
 
         accountService.deposit("dorjan", new BigDecimal("100.00"));
@@ -52,7 +52,7 @@ class AccountServiceTest {
         assertThatThrownBy(() -> accountService.deposit("ghost", new BigDecimal("100.00")))
                 .isInstanceOf(AccountNotFoundException.class);
 
-        verify(accountMapper, never()).toResponse(any());
+        verify(accountMapper, never()).toAccountResponse(any());
     }
 
     private void assertThatBalance(Account account, String expected) {
