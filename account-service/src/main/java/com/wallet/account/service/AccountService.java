@@ -6,6 +6,8 @@ import com.wallet.account.domain.TransactionType;
 import com.wallet.account.dto.AccountResponse;
 import com.wallet.account.dto.CreateAccountRequest;
 import com.wallet.account.dto.TransactionResponse;
+import com.wallet.account.event.EventPublisher;
+import com.wallet.account.event.TransactionRecordedEvent;
 import com.wallet.account.exception.AccountAlreadyExistsException;
 import com.wallet.account.exception.AccountNotFoundException;
 import com.wallet.account.mapper.AccountMapper;
@@ -28,6 +30,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final TransactionRepository transactionRepository;
+    private final EventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public AccountResponse getMyAccount(String ownerUsername) {
@@ -72,6 +75,10 @@ public class AccountService {
         );
         transactionRepository.save(tx);
 
+        eventPublisher.publish(new TransactionRecordedEvent(
+                account.getId(), ownerUsername, TransactionType.DEPOSIT, amount, account.getBalance()
+        ));
+
         log.info("Deposit completed for user: {}", ownerUsername);
         return accountMapper.toAccountResponse(account);
     }
@@ -92,6 +99,10 @@ public class AccountService {
                 account.getBalance()
         );
         transactionRepository.save(tx);
+
+        eventPublisher.publish(new TransactionRecordedEvent(
+                account.getId(), ownerUsername, TransactionType.WITHDRAWAL, amount, account.getBalance()
+        ));
 
         log.info("Withdraw completed for user: {}", ownerUsername);
         return accountMapper.toAccountResponse(account);
