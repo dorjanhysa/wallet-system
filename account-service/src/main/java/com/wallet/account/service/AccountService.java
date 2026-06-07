@@ -11,6 +11,7 @@ import com.wallet.account.event.TransactionRecordedEvent;
 import com.wallet.account.exception.AccountAlreadyExistsException;
 import com.wallet.account.exception.AccountNotFoundException;
 import com.wallet.account.mapper.AccountMapper;
+import com.wallet.account.outbox.OutboxWriter;
 import com.wallet.account.repository.AccountRepository;
 import com.wallet.account.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final TransactionRepository transactionRepository;
-    private final EventPublisher eventPublisher;
+    private final OutboxWriter outboxWriter;
 
     @Transactional(readOnly = true)
     public AccountResponse getMyAccount(String ownerUsername) {
@@ -75,9 +76,12 @@ public class AccountService {
         );
         transactionRepository.save(tx);
 
-        eventPublisher.publish(new TransactionRecordedEvent(
-                account.getId(), ownerUsername, TransactionType.DEPOSIT, amount, account.getBalance()
-        ));
+        outboxWriter.write(
+                "Account",
+                account.getId(),
+                "TransactionRecorded",
+                new TransactionRecordedEvent(account.getId(), ownerUsername, TransactionType.DEPOSIT, amount, account.getBalance())
+        );
 
         log.info("Deposit completed for user: {}", ownerUsername);
         return accountMapper.toAccountResponse(account);
@@ -100,9 +104,12 @@ public class AccountService {
         );
         transactionRepository.save(tx);
 
-        eventPublisher.publish(new TransactionRecordedEvent(
-                account.getId(), ownerUsername, TransactionType.WITHDRAWAL, amount, account.getBalance()
-        ));
+        outboxWriter.write(
+                "Account",
+                account.getId(),
+                "TransactionRecorded",
+                new TransactionRecordedEvent(account.getId(), ownerUsername, TransactionType.WITHDRAWAL, amount, account.getBalance())
+        );
 
         log.info("Withdraw completed for user: {}", ownerUsername);
         return accountMapper.toAccountResponse(account);

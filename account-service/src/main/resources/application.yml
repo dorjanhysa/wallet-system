@@ -39,7 +39,7 @@ spring:
     bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: account-service
       auto-offset-reset: earliest
@@ -70,6 +70,6 @@ logging:
     root: INFO
     com.wallet.account: DEBUG
     org.flywaydb: INFO
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: INFO
   pattern:
     console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

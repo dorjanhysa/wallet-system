@@ -14,8 +14,8 @@ public class EventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publish(TransactionRecordedEvent event) {
-        log.info("Publishing event for account: {}", event.accountId());
-        kafkaTemplate.send(TOPIC, event.accountId().toString(), event);
+    public void publishRaw(String key, String jsonPayload) {
+        log.debug("Publishing event to Kafka, key: {}", key);
+        kafkaTemplate.send(TOPIC, key, jsonPayload);
     }
 }
