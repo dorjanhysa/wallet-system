@@ -3,6 +3,7 @@ spring:
     name: notification-service
   profiles:
     active: dev
+
   kafka:
     bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
     consumer:
@@ -14,6 +15,12 @@ spring:
         spring.json.use.type.headers: false
         spring.json.trusted.packages: "com.wallet.notification.event"
         spring.json.value.default.type: "com.wallet.notification.event.TransactionRecordedEvent"
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6380}
+      timeout: 2000ms
 
 server:
   port: 8083

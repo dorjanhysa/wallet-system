@@ -36,7 +36,11 @@ public class OutboxPoller {
 
         for (OutboxEvent event : pending) {
             try {
-                eventPublisher.publishRaw(event.getAggregateId().toString(), event.getPayload());
+                eventPublisher.publishRaw(
+                        event.getId().toString(),
+                        event.getAggregateId().toString(),
+                        event.getPayload()
+                );
                 event.markAsPublished();
             } catch (Exception e) {
                 log.error("Failed to publish outbox event {}: {}", event.getId(), e.getMessage());
