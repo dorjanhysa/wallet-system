@@ -6,6 +6,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,13 +18,6 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleNotFound(AccountNotFoundException ex) {
         ProblemDetail p = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         p.setTitle("Account Not Found");
-        return p;
-    }
-
-    @ExceptionHandler(AccountAlreadyExistsException.class)
-    public ProblemDetail handleExists(AccountAlreadyExistsException ex) {
-        ProblemDetail p = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
-        p.setTitle("Account Already Exists");
         return p;
     }
 
@@ -53,5 +47,14 @@ public class GlobalExceptionHandler {
         problem.setTitle("Validation Error");
         problem.setProperty("errors", errors);
         return problem;
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        ProblemDetail p = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid value for parameter '" + ex.getName() + "'");
+        p.setTitle("Invalid Request Parameter");
+        return p;
     }
 }

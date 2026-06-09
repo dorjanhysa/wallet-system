@@ -4,6 +4,7 @@ import com.wallet.account.domain.Account;
 import com.wallet.account.repository.AccountRepository;
 import com.wallet.account.repository.OutboxEventRepository;
 import com.wallet.account.service.AccountService;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,23 +49,26 @@ class OutboxIntegrationTest {
 
     private static final String USER = "outbox-user";
 
+    private UUID accountId;
+
     @BeforeEach
     void setUp() {
         outboxRepository.deleteAll();
         accountRepository.deleteAll();
-        accountRepository.save(new Account(USER, "EUR"));
+        Account saved = accountRepository.save(new Account(USER, "EUR"));
+        this.accountId = saved.getId();
     }
 
     @Test
     void deposit_writesOutboxEvent_andPollerPublishesIt() {
-        accountService.deposit(USER, new BigDecimal("100.00"));
+        accountService.deposit(accountId, USER, new BigDecimal("100.00"));
 
         assertThat(outboxRepository.findAll()).hasSize(1);
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(5))
                 .untilAsserted(() ->
-                        verify(kafkaTemplate).send(eq("account-events"), any(), any())
+                        verify(kafkaTemplate).send(any(ProducerRecord.class))
                 );
 
         Awaitility.await()

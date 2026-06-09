@@ -4,12 +4,15 @@ import com.wallet.account.domain.Account;
 import com.wallet.account.dto.AccountResponse;
 import com.wallet.account.exception.AccountNotFoundException;
 import com.wallet.account.mapper.AccountMapper;
+import com.wallet.account.outbox.OutboxWriter;
 import com.wallet.account.repository.AccountRepository;
+import com.wallet.account.repository.TransactionRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -25,6 +28,12 @@ class AccountServiceTest {
     private AccountRepository accountRepository;
 
     @Mock
+    private TransactionRepository transactionRepository;
+
+    @Mock
+    private OutboxWriter outboxWriter;
+
+    @Mock
     private AccountMapper accountMapper;
 
     @InjectMocks
@@ -32,24 +41,26 @@ class AccountServiceTest {
 
     @Test
     void deposit_onExistingAccount_creditsBalance() {
+        UUID accountId = UUID.randomUUID();
         Account account = new Account("dorjan", "EUR");
         account.credit(new BigDecimal("50.00"));
+        ReflectionTestUtils.setField(account, "id", accountId);
 
-        when(accountRepository.findByOwnerUsername("dorjan")).thenReturn(Optional.of(account));
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
         when(accountMapper.toAccountResponse(account))
                 .thenReturn(new AccountResponse(UUID.randomUUID(), "dorjan", new BigDecimal("150.00"), "EUR"));
 
-        accountService.deposit("dorjan", new BigDecimal("100.00"));
+        accountService.deposit(accountId, "dorjan", new BigDecimal("100.00"));
 
-        // verifico che il dominio sia stato chiamato: il saldo dell'entità è cambiato
         assertThatBalance(account, "150.00");
     }
 
     @Test
     void deposit_onNonExistentAccount_throwsNotFound() {
-        when(accountRepository.findByOwnerUsername("ghost")).thenReturn(Optional.empty());
+        UUID accountId = UUID.randomUUID();
+        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> accountService.deposit("ghost", new BigDecimal("100.00")))
+        assertThatThrownBy(() -> accountService.deposit(accountId, "ghost", new BigDecimal("100.00")))
                 .isInstanceOf(AccountNotFoundException.class);
 
         verify(accountMapper, never()).toAccountResponse(any());
@@ -58,5 +69,19 @@ class AccountServiceTest {
     private void assertThatBalance(Account account, String expected) {
         org.assertj.core.api.Assertions.assertThat(account.getBalance())
                 .isEqualByComparingTo(new BigDecimal(expected));
+    }
+
+    @Test
+    void deposit_onAccountOwnedByAnotherUser_throwsNotFound() {
+        UUID accountId = UUID.randomUUID();
+        Account account = new Account("alice", "EUR");
+        ReflectionTestUtils.setField(account, "id", accountId);
+
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+
+        assertThatThrownBy(() -> accountService.deposit(accountId, "dorjan", new BigDecimal("100.00")))
+                .isInstanceOf(AccountNotFoundException.class);
+
+        verify(accountMapper, never()).toAccountResponse(any(Account.class));
     }
 }

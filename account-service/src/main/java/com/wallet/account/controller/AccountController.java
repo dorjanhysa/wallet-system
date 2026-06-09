@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -23,10 +25,14 @@ public class AccountController {
 
     private final AccountService accountService;
 
-    @GetMapping("/me")
-    public AccountResponse getMyAccount(@AuthenticationPrincipal Jwt jwt) {
-        String username = jwt.getSubject();
-        return accountService.getMyAccount(username);
+    @GetMapping
+    public List<AccountResponse> getMyAccounts(@AuthenticationPrincipal Jwt jwt) {
+        return accountService.getMyAccounts(jwt.getSubject());
+    }
+
+    @GetMapping("/{id}")
+    public AccountResponse getAccount(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
+        return accountService.getAccount(id, jwt.getSubject());
     }
 
     @PostMapping
@@ -34,33 +40,32 @@ public class AccountController {
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CreateAccountRequest request
     ) {
-        String username = jwt.getSubject();
-        AccountResponse accountCreated = accountService.createAccount(username, request);
 
+        AccountResponse accountCreated = accountService.createAccount(jwt.getSubject(), request);
         URI location = URI.create("/api/accounts/" + accountCreated.id());
         return ResponseEntity.created(location).body(accountCreated);
     }
 
-    @PostMapping("/me/deposit")
+    @PostMapping("/{id}/deposit")
     public AccountResponse deposit(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
             @Valid @RequestBody AmountRequest request)
     {
-        return accountService.deposit(jwt.getSubject(), request.amount());
+        return accountService.deposit(id, jwt.getSubject(), request.amount());
     }
 
-    @PostMapping("/me/withdraw")
+    @PostMapping("/{id}/withdraw")
     public AccountResponse withdraw(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
             @Valid @RequestBody AmountRequest request)
     {
-        return accountService.withdraw(jwt.getSubject(), request.amount());
+        return accountService.withdraw(id, jwt.getSubject(), request.amount());
     }
 
-    @GetMapping("/me/transactions")
+    @GetMapping("/{id}/transactions")
     public Page<TransactionResponse> getMyTransactions(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal Jwt jwt, @PathVariable UUID id,
             Pageable pageable) {
-        return accountService.getMyTransactions(jwt.getSubject(), pageable);
+        return accountService.getMyTransactions(id, jwt.getSubject(), pageable);
     }
 }

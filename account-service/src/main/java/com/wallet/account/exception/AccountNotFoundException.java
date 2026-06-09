@@ -1,7 +1,9 @@
 package com.wallet.account.exception;
 
+import java.util.UUID;
+
 public class AccountNotFoundException extends RuntimeException {
-    public AccountNotFoundException(String ownerUsername) {
-        super("Account not found for user: " + ownerUsername);
+    public AccountNotFoundException(UUID accountId) {
+        super("Account not found: " + accountId);
     }
 }

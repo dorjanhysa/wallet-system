@@ -13,6 +13,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,12 +37,15 @@ class ConcurrencyIntegrationTest {
 
     private static final String USER = "concurrent-user";
 
+    private UUID accountId;
+
     @BeforeEach
     void setup() {
         accountRepository.deleteAll();
         Account account = new Account(USER, "EUR");
         account.credit(new BigDecimal("100.00"));
-        accountRepository.save(account);
+        Account saved = accountRepository.save(account);
+        this.accountId = saved.getId();
     }
 
     @Test
@@ -62,7 +66,7 @@ class ConcurrencyIntegrationTest {
                 readyLatch.countDown();
                 try {
                     startLatch.await();
-                    accountService.withdraw(USER, withdrawAmount);
+                    accountService.withdraw(accountId, USER, withdrawAmount);
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     conflictCount.incrementAndGet();
