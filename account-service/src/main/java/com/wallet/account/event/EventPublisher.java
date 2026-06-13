@@ -19,7 +19,7 @@ public class EventPublisher {
 
     private static final Map<String, String> TOPIC_ROUTING = Map.of(
             "TransactionRecorded", "account-events",
-            "DebitResult", "account-command-results"
+            "CommandResult", "account-command-results"
     );
 
     private final KafkaTemplate<String, Object> kafkaTemplate;

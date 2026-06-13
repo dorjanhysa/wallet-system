@@ -1,9 +1,6 @@
 package com.wallet.account.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,13 +10,18 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "processed_commands")
+@IdClass(ProcessedCommand.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProcessedCommand {
 
     @Id
-    @Column(name = "command_id")
-    private UUID commandId;
+    @Column(name = "transfer_id")
+    private UUID transferId;
+
+    @Id
+    @Column(name = "command_type")
+    private String commandType;
 
     @Column(name = "result_type", nullable = false)
     private String resultType;
@@ -27,8 +29,9 @@ public class ProcessedCommand {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    public ProcessedCommand(UUID commandId, String resultType) {
-        this.commandId = commandId;
+    public ProcessedCommand(UUID transferId, String commandType, String resultType) {
+        this.transferId = transferId;
+        this.commandType = commandType;
         this.resultType = resultType;
         this.createdAt = Instant.now();
     }

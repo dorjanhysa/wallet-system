@@ -1,11 +1,11 @@
 package com.wallet.account.event;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
-public record DebitResult(
+public record CompensateCommand(
 
         UUID transferId,
         UUID accountId,
-        boolean success,
-        String failureReason
+        BigDecimal amount
 ) {}

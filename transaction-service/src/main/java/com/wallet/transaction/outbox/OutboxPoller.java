@@ -38,6 +38,7 @@ public class OutboxPoller {
             try {
                 eventPublisher.publishRaw(
                         event.getId().toString(),
+                        event.getEventType(),
                         event.getAggregateId().toString(),
                         event.getPayload()
                 );

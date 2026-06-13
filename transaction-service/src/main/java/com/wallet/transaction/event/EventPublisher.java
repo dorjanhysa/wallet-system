@@ -8,20 +8,30 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class EventPublisher {
 
-    private static final String TOPIC = "account-commands";
+    private static final Map<String, String> TOPIC_ROUTING = Map.of(
+            "DebitCommand", "account-debit-commands",
+            "CreditCommand", "account-credit-commands",
+            "CompensateCommand", "account-compensate-commands"
+    );
+
     public static final String EVENT_ID_HEADER = "event-id";
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publishRaw(String eventId, String key, String jsonPayload) {
-        log.debug("Publishing command to Kafka, eventId: {}, key: {}", eventId, key);
-        ProducerRecord<String, Object> recordEvent = new ProducerRecord<>(TOPIC, key, jsonPayload);
+    public void publishRaw(String eventId, String eventType, String key, String jsonPayload) {
+        String topic = TOPIC_ROUTING.get(eventType);
+        if (topic == null) {
+            throw new IllegalStateException("No topic mapping for event type: " + eventType);
+        }
+        log.debug("Publishing command type '{}' to topic '{}', eventId: {}", eventType, topic, eventId);
+        ProducerRecord<String, Object> recordEvent = new ProducerRecord<>(topic, key, jsonPayload);
         recordEvent.headers().add(new RecordHeader(EVENT_ID_HEADER, eventId.getBytes(StandardCharsets.UTF_8)));
         kafkaTemplate.send(recordEvent);
     }
