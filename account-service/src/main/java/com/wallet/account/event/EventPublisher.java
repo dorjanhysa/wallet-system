@@ -8,21 +8,31 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class EventPublisher {
 
-    private static final String TOPIC = "account-events";
     public static final String EVENT_ID_HEADER = "event-id";
+
+    private static final Map<String, String> TOPIC_ROUTING = Map.of(
+            "TransactionRecorded", "account-events",
+            "DebitResult", "account-command-results"
+    );
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publishRaw(String eventId, String key, String jsonPayload) {
-        log.debug("Publishing event to Kafka, eventId: {}, key: {}", eventId, key);
+    public void publishRaw(String eventId, String eventType, String key, String jsonPayload) {
+        String topic = TOPIC_ROUTING.get(eventType);
+        if (topic == null) {
+            throw new IllegalStateException("No topic mapping for event type: " + eventType);
+        }
 
-        ProducerRecord<String, Object> eventRecord = new ProducerRecord<>(TOPIC, key, jsonPayload);
+        log.debug("Publishing event type '{}' to topic '{}', eventId: {}", eventType, topic, eventId);
+
+        ProducerRecord<String, Object> eventRecord = new ProducerRecord<>(topic, key, jsonPayload);
         eventRecord.headers().add(new RecordHeader(
                 EVENT_ID_HEADER, eventId.getBytes(StandardCharsets.UTF_8)));
 

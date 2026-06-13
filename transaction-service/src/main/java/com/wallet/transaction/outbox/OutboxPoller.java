@@ -1,8 +1,8 @@
-package com.wallet.account.outbox;
+package com.wallet.transaction.outbox;
 
-import com.wallet.account.domain.OutboxEvent;
-import com.wallet.account.event.EventPublisher;
-import com.wallet.account.repository.OutboxEventRepository;
+import com.wallet.transaction.domain.OutboxEvent;
+import com.wallet.transaction.event.EventPublisher;
+import com.wallet.transaction.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -38,7 +38,6 @@ public class OutboxPoller {
             try {
                 eventPublisher.publishRaw(
                         event.getId().toString(),
-                        event.getEventType(),
                         event.getAggregateId().toString(),
                         event.getPayload()
                 );
