@@ -1,0 +1,30 @@
+<mat-toolbar color="primary">
+  <span>Wallet</span>
+  <span class="spacer"></span>
+  <button matButton (click)="logout()">Logout</button>
+</mat-toolbar>
+
+<div class="content">
+  <h2>I tuoi conti</h2>
+
+  @if (loading()) {
+    <div class="center"><mat-spinner></mat-spinner></div>
+  } @else if (errorMessage()) {
+    <p class="error-message">{{ errorMessage() }}</p>
+  } @else {
+    @if (accounts().length === 0) {
+      <p>Non hai ancora conti.</p>
+    } @else {
+      <div class="accounts-grid">
+        @for (account of accounts(); track account.id) {
+          <mat-card class="account-card">
+            <mat-card-content>
+              <p class="balance">{{ account.balance | number:'1.2-2' }} {{ account.currency }}</p>
+              <p class="account-id">ID: {{ account.id }}</p>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+  }
+</div>
