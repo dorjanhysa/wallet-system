@@ -1,0 +1,41 @@
+<div class="login-container">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <mat-card-title>Wallet Login</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Username</mat-label>
+        <input matInput
+               [ngModel]="username()"
+               (ngModelChange)="username.set($event)"
+               [disabled]="loading()">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input matInput
+               type="password"
+               [ngModel]="password()"
+               (ngModelChange)="password.set($event)"
+               [disabled]="loading()"
+               (keyup.enter)="onSubmit()">
+      </mat-form-field>
+
+      @if (errorMessage()) {
+        <p class="error-message">{{ errorMessage() }}</p>
+      }
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button matButton="filled" (click)="onSubmit()" [disabled]="loading()">
+        @if (loading()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          Accedi
+        }
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
