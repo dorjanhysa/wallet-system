@@ -26,3 +26,9 @@
 .center { display: flex; justify-content: center; padding: 2rem; }
 
 .error-message { color: #d32f2f; }
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

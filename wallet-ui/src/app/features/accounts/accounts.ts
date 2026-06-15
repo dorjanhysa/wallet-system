@@ -6,8 +6,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
 import { AccountService } from '../../core/services/account';
 import { AuthService } from '../../core/services/auth';
-import { Account } from '../../models/account';
+import { Account, CreateAccountRequest } from '../../models/account';
 import { DecimalPipe } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { CreateAccountDialogComponent } from './create-account-dialog/create-account-dialog';
 
 @Component({
   selector: 'app-accounts',
@@ -25,6 +27,7 @@ export class AccountsComponent implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
 
   accounts = signal<Account[]>([]);
   loading = signal(false);
@@ -53,5 +56,22 @@ export class AccountsComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  openCreateDialog(): void {
+    const dialogRef = this.dialog.open(CreateAccountDialogComponent);
+
+    dialogRef.afterClosed().subscribe((result: CreateAccountRequest | undefined) => {
+      if (result) {
+        this.createAccount(result);
+      }
+    });
+  }
+
+  private createAccount(request: CreateAccountRequest): void {
+    this.accountService.createAccount(request).subscribe({
+      next: () => this.loadAccounts(),
+      error: () => this.errorMessage.set('Error creating account. ')
+    });
   }
 }
