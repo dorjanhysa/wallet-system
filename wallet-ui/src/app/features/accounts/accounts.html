@@ -20,7 +20,7 @@
     } @else {
       <div class="accounts-grid">
         @for (account of accounts(); track account.id) {
-          <mat-card class="account-card">
+          <mat-card class="account-card" (click)="goToDetail(account.id)">
             <mat-card-content>
               <p class="balance">{{ account.balance | number:'1.2-2' }} {{ account.currency }}</p>
               <p class="account-id">ID: {{ account.id }}</p>

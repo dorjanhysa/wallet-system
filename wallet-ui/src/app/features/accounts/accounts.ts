@@ -74,4 +74,8 @@ export class AccountsComponent implements OnInit {
       error: () => this.errorMessage.set('Error creating account. ')
     });
   }
+
+  goToDetail(id: string): void {
+    this.router.navigate(['/accounts', id]);
+  }
 }

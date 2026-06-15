@@ -1,0 +1,36 @@
+<mat-toolbar color="primary">
+  <button matButton (click)="goBack()">Back</button>
+</mat-toolbar>
+
+<div class="content">
+  @if (account(); as acc) {
+    <mat-card class="balance-card">
+      <mat-card-content>
+        <p class="balance">{{ acc.balance | number:'1.2-2' }} {{ acc.currency }}</p>
+        <p class="account-id">ID: {{ acc.id }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button matButton="filled" (click)="deposit()">Deposit</button>
+        <button matButton (click)="withdraw()">Withdraw</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <h3>Transactions</h3>
+    @if (transactions().length === 0) {
+      <p>No Transactions</p>
+    } @else {
+      <mat-list>
+        @for (tx of transactions(); track tx.id) {
+          <mat-list-item>
+            <span matListItemTitle>{{ tx.type }} — {{ tx.amount | number:'1.2-2' }}</span>
+            <span matListItemLine>Balance after: {{ tx.balanceAfter | number:'1.2-2' }} · {{ tx.createdAt | date:'short' }}</span>
+          </mat-list-item>
+        }
+      </mat-list>
+    }
+  }
+
+  @if (errorMessage()) {
+    <p class="error-message">{{ errorMessage() }}</p>
+  }
+</div>
