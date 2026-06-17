@@ -122,5 +122,12 @@ services:
       - account-service
       - transaction-service
 
+  frontend:
+    build: ./wallet-ui
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+
 volumes:
   postgres-data:
