@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "processed_commands")
-@IdClass(ProcessedCommand.class)
+@IdClass(ProcessedCommandId.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProcessedCommand {

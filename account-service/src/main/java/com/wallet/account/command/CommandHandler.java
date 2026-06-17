@@ -130,7 +130,7 @@ public class CommandHandler {
         outboxWriter.write(
                 "Account",
                 command.accountId(),
-                "DebitResult",
+                "CommandResult",
                 new CommandResult(command.transferId(), command.accountId(), "DEBIT", success, failureReason));
     }
 
@@ -138,7 +138,7 @@ public class CommandHandler {
         outboxWriter.write(
                 "Account",
                 command.accountId(),
-                "CreditResult",
+                "CommandResult",
                 new CommandResult(command.transferId(), command.accountId(), "CREDIT", success, failureReason));
     }
 

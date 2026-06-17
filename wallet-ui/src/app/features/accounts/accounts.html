@@ -8,6 +8,7 @@
   <div class="header-row">
     <h2>Your Accounts</h2>
     <button matButton="filled" (click)="openCreateDialog()">New Account</button>
+    <button matButton="filled" (click)="router.navigate(['/transfer'])">New Transfer</button>
   </div>
 
   @if (loading()) {

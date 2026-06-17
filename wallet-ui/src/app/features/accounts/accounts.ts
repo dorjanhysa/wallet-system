@@ -26,7 +26,7 @@ import { CreateAccountDialogComponent } from './create-account-dialog/create-acc
 export class AccountsComponent implements OnInit {
   private readonly accountService = inject(AccountService);
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
+  protected readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
 
   accounts = signal<Account[]>([]);
