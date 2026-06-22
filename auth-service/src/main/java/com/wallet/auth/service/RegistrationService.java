@@ -23,6 +23,7 @@ public class RegistrationService {
 
     @Transactional
     public void register(RegisterRequest request) {
+
         log.info("Registration attempt for username: {}", request.username());
 
         if (userRepository.existsByUsername(request.username())) {
@@ -34,6 +35,7 @@ public class RegistrationService {
         User user = new User(request.username(), hashedPassword, Set.of(Role.USER));
 
         userRepository.save(user);
+
         log.info("User registered successfully: {}", request.username());
     }
 }
